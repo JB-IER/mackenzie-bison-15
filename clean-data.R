@@ -9,6 +9,7 @@ counts$Dayte <- dayte(counts$Date)
 
 bison %<>% select(Year, Bison = HerdN)
 bison %<>% na.omit
+
 counts %<>% select(Year = year, Dayte, Calves, Yearlings = yearlings, Cows)
 
 counts %<>% filter(Calves <= Cows)

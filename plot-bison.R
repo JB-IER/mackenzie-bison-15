@@ -34,3 +34,15 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
+calfcow <- predict(analysis, parm = "eCalfCowRatio", newdata = "Year")
+calfcow$Year %<>% as.integer
+
+gp <- ggplot(data = calfcow, aes(x = Year, y = estimate))
+gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(50)
+print(gp)
+
+
