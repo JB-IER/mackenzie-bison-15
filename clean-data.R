@@ -4,33 +4,20 @@ set_folders("input")
 
 load_rdata()
 
-bison %<>% select(-Yr)
+counts$Date %<>% as.Date(format = "%d-%b-%y")
+counts$Dayte <- dayte(counts$Date)
+
+bison %<>% select(Year, Bison = HerdN)
+bison %<>% na.omit
+counts %<>% select(Year = year, Dayte, Calves, Yearlings = yearlings, Cows)
+
+counts$Calves[is.na(counts$Calves)] <- 0
+counts$Yearlings[is.na(counts$Yearlings)] <- 0
+counts$Cows[is.na(counts$Cows)] <- 0
+
 weather %<>% rename(Year = bisonyear)
+rm(weather)
 
 set_folders("clean")
 
 save_rdata()
-
-# comp_survey_int
-# interval from may 15(calving) to comp surveys (CC,YC,BC)
-#
-# YC
-# Yearling cow ratio
-#
-# CC
-# calf-cow ratio
-#
-# BC
-# bull cow ratio
-#
-# herdN_int
-# interval from may 15(calving) to herd survey
-#
-# HerdN
-# Herd estimate
-#
-# Mort_collisions
-# Mortailites--traffic collisions
-#
-# Mort_hunterkill
-# hunter kills

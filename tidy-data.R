@@ -4,8 +4,8 @@ set_folders("clean")
 
 load_rdata()
 
-bison %<>% left_join(weather, by = "Year")
-rm(weather)
+bison %<>% full_join(counts, by = "Year")
+rm(counts)
 
 set_folders("tidy")
 
