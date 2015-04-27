@@ -11,6 +11,8 @@ bison %<>% select(Year, Bison = HerdN)
 bison %<>% na.omit
 counts %<>% select(Year = year, Dayte, Calves, Yearlings = yearlings, Cows)
 
+counts %<>% filter(Calves <= Cows)
+
 counts$Calves[is.na(counts$Calves)] <- 0
 counts$Yearlings[is.na(counts$Yearlings)] <- 0
 counts$Cows[is.na(counts$Cows)] <- 0

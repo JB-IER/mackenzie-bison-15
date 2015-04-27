@@ -12,8 +12,8 @@ print(summary(analysis))
 
 save_tables(analysis)
 
-bison <- coef(analysis, "bBison")
-bison$Year <- as.integer(levels(data$Year))
+bison <- predict(analysis, newdata = "Year")
+bison$Year %<>% as.integer
 
 gp <- ggplot(data = bison, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
@@ -22,3 +22,15 @@ gp <- gp + expand_limits(y = 0)
 
 gwindow(50)
 print(gp)
+
+scalf <- predict(analysis, parm = "eSurvivalCalfYear", newdata = "Year")
+scalf$Year %<>% as.integer
+
+gp <- ggplot(data = scalf, aes(x = Year, y = estimate))
+gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_y_continuous(name = "Calf Survival (%)", labels = percent)
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(50)
+print(gp)
+
