@@ -1,15 +1,12 @@
 model1 <- jags_model("model{
 
   bProductivity ~ dunif(0, 0.5)
-  bSurvivalCalf ~ dnorm(0, 2^-2)
+  bSurvivalCalf ~ dunif(0, 1)
   bSurvivalAdult ~ dunif(0, 1)
 
-  sSurvivalCalfYear ~ dunif(0, 2)
   for(i in 1:nYear){
-    bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
-
     eProductivityYear[i] <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
+    eSurvivalCalfYear[i] <- bSurvivalCalf
     eSurvivalYearlingYear[i] <- bSurvivalAdult
     eSurvivalAdultYear[i] <- bSurvivalAdult
   }
@@ -58,7 +55,7 @@ derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
     eProductivityYear[i] <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
+    eSurvivalCalfYear[i] <- bSurvivalCalf
     eSurvivalYearlingYear[i] <- bSurvivalAdult
     eSurvivalAdultYear[i] <- bSurvivalAdult
     eCalfCowRatio[i] <- bCalves[Year[i]] /  (bAdults[Year[i]] / 2)
