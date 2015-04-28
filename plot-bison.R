@@ -73,7 +73,7 @@ prod$Year %<>% as.character %>% as.integer
 gp <- ggplot(data = prod, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
 gp <- gp + scale_y_continuous(name = "Productivity (%)", labels = percent)
-gp <- gp + expand_limits(y = 0)
+gp <- gp + expand_limits(y = c(0,1))
 
 gwindow(50)
 print(gp)
