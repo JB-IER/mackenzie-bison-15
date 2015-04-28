@@ -27,6 +27,28 @@ analysis <- load_analysis()
 
 stopifnot(identical(data, dataset(analysis)))
 
+calfcow <- predict(analysis, parm = "eCalfCowRatio", newdata = "Year")
+calfcow$Year %<>% as.character %>% as.integer
+
+gp <- ggplot(data = calfcow, aes(x = Year, y = estimate))
+gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(50)
+print(gp)
+
+yearcow <- predict(analysis, parm = "eYearlingCowRatio", newdata = "Year")
+yearcow$Year %<>% as.character %>% as.integer
+
+gp <- ggplot(data = yearcow, aes(x = Year, y = estimate))
+gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(50)
+print(gp)
+
 
 cross_corr(analysis, parm = c("bProductivity", "bSurvivalCalf", "bSurvivalAdult"))
 
@@ -56,16 +78,6 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
-calfcow <- predict(analysis, parm = "eCalfCowRatio", newdata = "Year")
-calfcow$Year %<>% as.character %>% as.integer
-
-gp <- ggplot(data = calfcow, aes(x = Year, y = estimate))
-gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
-gp <- gp + expand_limits(y = c(0,1))
-
-gwindow(50)
-print(gp)
 
 prod <- predict(analysis, parm = "eProductivityYear", newdata = "Year")
 prod$Year %<>% as.character %>% as.integer
@@ -74,17 +86,6 @@ gp <- ggplot(data = prod, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
 gp <- gp + scale_y_continuous(name = "Productivity (%)", labels = percent)
 gp <- gp + expand_limits(y = c(0,1))
-
-gwindow(50)
-print(gp)
-
-yearcow <- predict(analysis, parm = "eYearlingCowRatio", newdata = "Year")
-yearcow$Year %<>% as.character %>% as.integer
-
-gp <- ggplot(data = calfcow, aes(x = Year, y = estimate))
-gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
-gp <- gp + expand_limits(y = 0)
 
 gwindow(50)
 print(gp)
@@ -105,7 +106,7 @@ syear$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = syear, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Yearly Survival (%)", labels = percent)
+gp <- gp + scale_y_continuous(name = "Yearling Survival (%)", labels = percent)
 gp <- gp + expand_limits(y = c(0,1))
 
 gwindow(50)
