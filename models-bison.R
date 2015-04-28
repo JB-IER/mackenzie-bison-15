@@ -4,12 +4,14 @@ model1 <- jags_model("model{
   bSurvivalCalf ~ dnorm(0, 2^-2)
   bSurvivalAdult ~ dnorm(0, 2^-2)
 
+  bSurvivalCalfWeather ~ dnorm(0, 2^-2)
+
   sSurvivalCalfYear ~ dunif(0, 2)
   for(i in 1:nYear){
     bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
 
     logit(eProductivityYear[i]) <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
+    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfWeather * Rainfall[i] + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
   }
@@ -57,7 +59,7 @@ derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
     logit(eProductivityYear[i]) <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
+    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfWeather * Rainfall[Year[i]] + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
     eCalfCowRatio[i] <- bCalves[Year[i]] /  (bAdults[Year[i]] / 2)
@@ -66,11 +68,16 @@ derived_code = "data{
 }",
 modify_data = function (data) {
 
-  weather <- data.frame(Year = data$Year, WSI = data$WSI)
+  weather <- data.frame(Year = data$Year, WSI = data$WSI, SummerTemp = data$SummerTemp,
+                        Rainfall = data$Rainfall)
   weather %<>% na.omit %>% unique
+  weather %<>% arrange(Year)
 
-  data$YearWeather  <- weather$Year
+  stopifnot(nrow(weather) == data$nYear)
+
   data$WSI  <- weather$WSI
+  data$SummerTemp  <- weather$SummerTemp
+  data$Rainfall  <- weather$Rainfall
 
   bison <- data.frame(Year = data$Year, Bison = data$Bison)
   bison %<>% na.omit %>% unique
@@ -86,118 +93,15 @@ modify_data = function (data) {
 
   data$YearlingsCows  <- data$Yearlings + data$Cows
   data$Yearlings <- NULL
-  print(data)
   data
 
 },
 modify_data_derived = function (data) {
   data
 },
-select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "WSI")
-)
-
-model2 <- jags_model("model{
-
-  bProportionCalves ~ dnorm(0, 2^-2)
-  bProportionYearlings ~ dnorm(0, 2^-2)
-
-  sProportionCalves ~ dunif(0, 2)
-  sProportionYearlings ~ dunif(0, 2)
-  for(i in 1:nYear){
-    bProportionCalvesYear[i] ~ dnorm(0, sProportionCalves^-2)
-    bProportionYearlingsYear[i] ~ dnorm(0, sProportionYearlings^-2)
-
-    logit(eProportionCalvesYear[i]) <- bProportionCalves + bProportionCalvesYear[i]
-    logit(eProportionYearlingsYear[i]) <- bProportionYearlings + bProportionYearlingsYear[i]
-  }
-
-  for(i in 1:length(Year)) {
-
-    Calves[i] ~ dbin(eProportionCalvesYear[Year[i]], Cows[i])
-    Cows[i] ~ dbin(eProportionYearlingsYear[Year[i]], YearlingsCows[i])
-  }
-}",
-derived_code = "data{
-  for(i in 1:length(Year)) {
-    logit(eProportionCalvesYear[i]) <- bProportionCalves + bProportionCalvesYear[Year[i]]
-    logit(eProportionYearlingsYear[i]) <- bProportionYearlings + bProportionYearlingsYear[Year[i]]
-  }
-  eCalfCowRatio <- eProportionCalvesYear
-  eYearlingCowRatio <- eProportionYearlingsYear / (1 - eProportionYearlingsYear)
-  prediction <- eProportionCalvesYear
-}",
-modify_data = function (data) {
-
-  data$Year <- data$Year[!is.na(data$Cows)]
-  data$Calves <- data$Calves[!is.na(data$Cows)]
-  data$Yearlings <- data$Yearlings[!is.na(data$Cows)]
-  data$Cows <- data$Cows[!is.na(data$Cows)]
-
-  data$YearlingsCows  <- data$Yearlings + data$Cows
-  data$Yearlings <- NULL
-  data
-
-},
-modify_data_derived = function (data) {
-  data
-},
-select_data = c("Year", "Calves", "Yearlings", "Cows")
-)
-
-model3 <- jags_model("model{
-
-  bProportionCalves ~ dnorm(0, 2^-2)
-  bProportionYearlings ~ dnorm(0, 2^-2)
-
-  sProportionCalves ~ dunif(0, 2)
-  sProportionYearlings ~ dunif(0, 2)
-  for(i in 1:nYear){
-    bProportionCalvesYear[i] ~ dnorm(0, sProportionCalves^-2)
-    bProportionYearlingsYear[i] ~ dnorm(0, sProportionYearlings^-2)
-
-    eProportionCalvesYear[i] <- bProportionCalves + bProportionCalvesYear[i]
-    eProportionYearlingsYear[i] <- bProportionYearlings + bProportionYearlingsYear[i]
-  }
-
-  sDispersionCalves ~ dunif(0, 2)
-  sDispersionYearlings ~ dunif(0, 2)
-  for(i in 1:length(Year)) {
-
-    eDispersionCalves[i] ~ dnorm(0, sDispersionCalves^-2)
-    eDispersionYearlings[i] ~ dnorm(0, sDispersionYearlings^-2)
-
-    logit(eProportionCalves[i]) <- eProportionCalvesYear[Year[i]] + eDispersionCalves[i]
-    logit(eProportionCowsYearlings[i]) <- eProportionYearlingsYear[Year[i]] + eDispersionYearlings[i]
-
-    Calves[i] ~ dbin(eProportionCalves[i], Cows[i])
-    Cows[i] ~ dbin(eProportionCowsYearlings[i], YearlingsCows[i])
-  }
-}",
-derived_code = "data{
-  for(i in 1:length(Year)) {
-    logit(eProportionCalvesYear[i]) <- bProportionCalves + bProportionCalvesYear[Year[i]]
-    logit(eProportionYearlingsYear[i]) <- bProportionYearlings + bProportionYearlingsYear[Year[i]]
-  }
-  eCalfCowRatio <- eProportionCalvesYear
-  eYearlingCowRatio <- (1 - eProportionYearlingsYear) / eProportionYearlingsYear
-  prediction <- eProportionCalvesYear
-}",
-modify_data = function (data) {
-
-  data$Year <- data$Year[!is.na(data$Cows)]
-  data$Calves <- data$Calves[!is.na(data$Cows)]
-  data$Yearlings <- data$Yearlings[!is.na(data$Cows)]
-  data$Cows <- data$Cows[!is.na(data$Cows)]
-
-  data$YearlingsCows  <- data$Yearlings + data$Cows
-  data$Yearlings <- NULL
-  data
-
-},
-modify_data_derived = function (data) {
-  data
-},
-select_data = c("Year", "Calves", "Yearlings", "Cows")
+random_effects = list(bSurvivalCalfYear = "Year"),
+select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows",
+                "WSI", "Rainfall", "SummerTemp")
 )
 
 models <- jaggernaut::combine(model1)
