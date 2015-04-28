@@ -37,6 +37,8 @@ model1 <- jags_model("model{
     Bison[i] ~ dnorm(eBison[i], sBison^-2)
   }
 
+  sDispersionCalves ~ dunif(0, 2)
+  sDispersionYearlings ~ dunif(0, 2)
   for(i in 1:length(Year)) {
     eCorComp[i] <- ((Dayte[i] - 135) / 365)
     eCalvesComp[i] <- bCalves[Year[i]] * eSurvivalCalfYear[Year[i]]^eCorComp[i]
@@ -44,8 +46,11 @@ model1 <- jags_model("model{
     eAdultsComp[i] <- bAdults[Year[i]] * eSurvivalAdultYear[Year[i]]^eCorComp[i]
 
     eCowsComp[i] <- eAdultsComp[i] / 2
-    eProportionCalves[i] <- eCalvesComp[i] / eCowsComp[i]
-    eProportionCowsYearlings[i] <- eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])
+
+    eDispersionCalves[i] ~ dnorm(0, sDispersionCalves^-2)
+    eDispersionYearlings[i] ~ dnorm(0, sDispersionYearlings^-2)
+    logit(eProportionCalves[i]) <- ilogit(eCalvesComp[i] / eCowsComp[i]) + eDispersionCalves[i]
+    logit(eProportionCowsYearlings[i]) <- ilogit(eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])) + eDispersionYearlings[i]
 
     Calves[i] ~ dbin(eProportionCalves[Year[i]], Cows[i])
     Cows[i] ~ dbin(eProportionCowsYearlings[Year[i]], YearlingsCows[i])
@@ -54,10 +59,10 @@ model1 <- jags_model("model{
 derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
+    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
+    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult + bSurvivalAdultYear[i]
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult + bSurvivalAdultYear[i]
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf
-    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
     logit(eCalfCowRatio[i]) <- bCalves[Year[i]] /  (bAdults[Year[i]] / 2)
     logit(eYearlingCowRatio[i]) <- bYearlings[Year[i]] /  (bAdults[Year[i]] / 2)
   }

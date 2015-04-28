@@ -4,9 +4,31 @@ set_folders("bison")
 
 data <- load_rdata("data")
 
+ratio <- data
+ratio$Year %<>% as.character %>% as.integer
+
+gp <- ggplot(data = filter(ratio), aes(x = Year, y = Calves / Cows, size = Calves + Cows))
+gp <- gp + geom_point()
+gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(100, 50)
+print(gp)
+
+gp <- ggplot(data = ratio, aes(x = Year, y = Yearlings / Cows, size = Yearlings + Cows))
+gp <- gp + geom_point()
+gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(100, 50)
+print(gp)
+
 analysis <- load_analysis()
 
 stopifnot(identical(data, dataset(analysis)))
+
+
+cross_corr(analysis, parm = c("bProductivity", "bSurvivalCalf", "bSurvivalAdult"))
 
 print(summary(analysis))
 
