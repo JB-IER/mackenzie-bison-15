@@ -29,9 +29,9 @@ model1 <- jags_model("model{
   eCorrection <- 308/365
   sBison ~ dunif(0, 100)
   for(i in 1:length(YearBison)) {
-    eCalves[i] <- bCalves[YearBison[i]] + eSurvivalCalfYear[YearBison[i]]^eCorrection
-    eYearlings[i] <- bYearlings[YearBison[i]] + eSurvivalYearlingYear[YearBison[i]]^eCorrection
-    eAdults[i] <- bAdults[YearBison[i]] + eSurvivalAdultYear[YearBison[i]]^eCorrection
+    eCalves[i] <- bCalves[YearBison[i]] * eSurvivalCalfYear[YearBison[i]]^eCorrection
+    eYearlings[i] <- bYearlings[YearBison[i]] * eSurvivalYearlingYear[YearBison[i]]^eCorrection
+    eAdults[i] <- bAdults[YearBison[i]] * eSurvivalAdultYear[YearBison[i]]^eCorrection
 
     eBison[i] <- eCalves[i] + eYearlings[i] + eAdults[i]
     Bison[i] ~ dnorm(eBison[i], sBison^-2)
@@ -39,9 +39,9 @@ model1 <- jags_model("model{
 
   for(i in 1:length(Year)) {
     eCorComp[i] <- ((Dayte[i] - 135) / 365)
-    eCalvesComp[i] <- bCalves[Year[i]] + eSurvivalCalfYear[Year[i]]^eCorComp[i]
-    eYearlingsComp[i] <- bYearlings[Year[i]] + eSurvivalYearlingYear[Year[i]]^eCorComp[i]
-    eAdultsComp[i] <- bAdults[Year[i]] + eSurvivalAdultYear[Year[i]]^eCorComp[i]
+    eCalvesComp[i] <- bCalves[Year[i]] * eSurvivalCalfYear[Year[i]]^eCorComp[i]
+    eYearlingsComp[i] <- bYearlings[Year[i]] * eSurvivalYearlingYear[Year[i]]^eCorComp[i]
+    eAdultsComp[i] <- bAdults[Year[i]] * eSurvivalAdultYear[Year[i]]^eCorComp[i]
 
     eCowsComp[i] <- eAdultsComp[i] / 2
     eProportionCalves[i] <- eCalvesComp[i] / eCowsComp[i]
