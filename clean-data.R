@@ -18,8 +18,8 @@ counts$Calves[is.na(counts$Calves)] <- 0
 counts$Yearlings[is.na(counts$Yearlings)] <- 0
 counts$Cows[is.na(counts$Cows)] <- 0
 
-weather %<>% rename(Year = bisonyear)
-rm(weather)
+weather %<>% select(Year = bisonyear, WSI, Rainfall = rainfall, SummerTemp = temp_june_july)
+plot(weather)
 
 set_folders("clean")
 

@@ -5,7 +5,9 @@ set_folders("clean")
 load_rdata()
 
 bison %<>% full_join(counts, by = "Year")
-rm(counts)
+bison %<>% full_join(weather, by = "Year")
+
+rm(weather, counts)
 
 bison %<>% filter(Year <= 2012)
 

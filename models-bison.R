@@ -5,12 +5,10 @@ model1 <- jags_model("model{
   bSurvivalAdult ~ dnorm(0, 2^-2)
 
   sSurvivalCalfYear ~ dunif(0, 2)
-  sProductivityYear ~ dunif(0, 2)
   for(i in 1:nYear){
     bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
-    bProductivityYear[i] ~ dnorm(0, sProductivityYear^-2)
 
-    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
+    logit(eProductivityYear[i]) <- bProductivity
     logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
@@ -38,7 +36,6 @@ model1 <- jags_model("model{
   }
 
   sDispersionCalves ~ dunif(0, 2)
-  sDispersionYearlings ~ dunif(0, 2)
   for(i in 1:length(Year)) {
     eCorComp[i] <- ((Dayte[i] - 135) / 365)
     eCalvesComp[i] <- bCalves[Year[i]] * eSurvivalCalfYear[Year[i]]^eCorComp[i]
@@ -48,10 +45,9 @@ model1 <- jags_model("model{
     eCowsComp[i] <- eAdultsComp[i] / 2
 
     eDispersionCalves[i] ~ dnorm(0, sDispersionCalves^-2)
-    eDispersionYearlings[i] ~ dnorm(0, sDispersionYearlings^-2)
 
     logit(eProportionCalves[i]) <- logit(eCalvesComp[i] / eCowsComp[i]) + eDispersionCalves[i]
-    logit(eProportionCowsYearlings[i]) <- logit(eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])) + eDispersionYearlings[i]
+    eProportionCowsYearlings[i] <- eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])
 
     Calves[i] ~ dbin(eProportionCalves[i], Cows[i])
     Cows[i] ~ dbin(eProportionCowsYearlings[i], YearlingsCows[i])
@@ -60,7 +56,7 @@ model1 <- jags_model("model{
 derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
-    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
+    logit(eProductivityYear[i]) <- bProductivity
     logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
@@ -70,11 +66,11 @@ derived_code = "data{
 }",
 modify_data = function (data) {
 
-#  weather <- data.frame(Year = data$Year, WSI = data$WSI)
-#  weather %<>% na.omit %>% unique
+  weather <- data.frame(Year = data$Year, WSI = data$WSI)
+  weather %<>% na.omit %>% unique
 
-#  data$YearWeather  <- weather$Year
-#  data$WSI  <- weather$WSI
+  data$YearWeather  <- weather$Year
+  data$WSI  <- weather$WSI
 
   bison <- data.frame(Year = data$Year, Bison = data$Bison)
   bison %<>% na.omit %>% unique
@@ -90,13 +86,14 @@ modify_data = function (data) {
 
   data$YearlingsCows  <- data$Yearlings + data$Cows
   data$Yearlings <- NULL
+  print(data)
   data
 
 },
 modify_data_derived = function (data) {
   data
 },
-select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows")
+select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "WSI")
 )
 
 model2 <- jags_model("model{
