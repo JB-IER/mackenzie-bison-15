@@ -5,10 +5,12 @@ model1 <- jags_model("model{
   bSurvivalAdult ~ dnorm(0, 2^-2)
 
   sSurvivalCalfYear ~ dunif(0, 2)
+  sProductivityYear ~ dunif(0, 2)
   for(i in 1:nYear){
     bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
+    bProductivityYear[i] ~ dnorm(0, sProductivityYear^-2)
 
-    logit(eProductivityYear[i]) <- bProductivity
+    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
     logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
@@ -58,7 +60,7 @@ model1 <- jags_model("model{
 derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
-    logit(eProductivityYear[i]) <- bProductivity
+    logit(eProductivityYear[i]) <- bProductivity + bProductivityYear[i]
     logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
@@ -67,6 +69,12 @@ derived_code = "data{
   }
 }",
 modify_data = function (data) {
+
+#  weather <- data.frame(Year = data$Year, WSI = data$WSI)
+#  weather %<>% na.omit %>% unique
+
+#  data$YearWeather  <- weather$Year
+#  data$WSI  <- weather$WSI
 
   bison <- data.frame(Year = data$Year, Bison = data$Bison)
   bison %<>% na.omit %>% unique
