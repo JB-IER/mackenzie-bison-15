@@ -19,7 +19,6 @@ counts$Yearlings[is.na(counts$Yearlings)] <- 0
 counts$Cows[is.na(counts$Cows)] <- 0
 
 weather %<>% select(Year = bisonyear, WSI, Rainfall = rainfall, SummerTemp = temp_june_july)
-plot(weather)
 
 set_folders("clean")
 
