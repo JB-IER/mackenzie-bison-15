@@ -15,6 +15,8 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(100, 50)
 print(gp)
 
+save_plot("calf_cow", caption = "The calf-cow composition data by year.")
+
 gp <- ggplot(data = ratio, aes(x = Year, y = Yearlings / Cows, size = Yearlings + Cows))
 gp <- gp + geom_point()
 gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
@@ -22,6 +24,8 @@ gp <- gp + expand_limits(y = c(0,1))
 
 gwindow(100, 50)
 print(gp)
+
+save_plot("yearling_cow", caption = "The yearling-cow composition data by year.")
 
 analysis <- load_analysis()
 
@@ -38,6 +42,8 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
+save_plot("ccratio", caption = "The predicted calf:cow ratio by year.")
+
 yearcow <- predict(analysis, parm = "eYearlingCowRatio", newdata = "Year")
 yearcow$Year %<>% as.character %>% as.integer
 
@@ -49,6 +55,7 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
+save_plot("ycratio", caption = "The predicted yearling:cow ratio by year.")
 
 cross_corr(analysis, parm = c("bProductivity", "bSurvivalCalf", "bSurvivalAdult"))
 
@@ -67,7 +74,11 @@ gp <- gp + expand_limits(y = 0)
 gwindow(50)
 print(gp)
 
-scalf <- predict(analysis, parm = "eSurvivalCalfYear", newdata = "Year")
+save_plot("popn", caption = "The predicted herd size by year.")
+
+newdata <- unique(select(data, Year, PDO))
+
+scalf <- predict(analysis, parm = "eSurvivalCalfYear", newdata = newdata)
 scalf$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = scalf, aes(x = Year, y = estimate))
@@ -77,6 +88,22 @@ gp <- gp + expand_limits(y = c(0,1))
 
 gwindow(50)
 print(gp)
+
+save_plot("scalf", caption = "The predicted calf survival by year.")
+
+gp <- ggplot(data = scalf, aes(x = PDO, y = estimate))
+gp <- gp + geom_line()
+gp <- gp + geom_line(aes(y = lower), linetype = "dotted")
+gp <- gp + geom_line(aes(y = upper), linetype = "dotted")
+gp <- gp + scale_y_continuous(name = "Pacific Decadal Oscillation Index")
+gp <- gp + scale_y_continuous(name = "Calf Survival (%)", labels = percent)
+gp <- gp + expand_limits(y = c(0,1))
+
+gwindow(50)
+print(gp)
+
+save_plot("pdo", caption = "The predicted relationship between calf survival and
+          the Pacific Decadal Oscillation Index.")
 
 
 prod <- predict(analysis, parm = "eProductivityYear", newdata = "Year")
@@ -90,6 +117,8 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
+save_plot("prod", caption = "The predicted probability of a female calfing by year.")
+
 sadult <- predict(analysis, parm = "eSurvivalAdultYear", newdata = "Year")
 sadult$Year %<>% as.character %>% as.integer
 
@@ -101,13 +130,4 @@ gp <- gp + expand_limits(y = c(0,1))
 gwindow(50)
 print(gp)
 
-syear <- predict(analysis, parm = "eSurvivalYearlingYear", newdata = "Year")
-syear$Year %<>% as.character %>% as.integer
-
-gp <- ggplot(data = syear, aes(x = Year, y = estimate))
-gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Yearling Survival (%)", labels = percent)
-gp <- gp + expand_limits(y = c(0,1))
-
-gwindow(50)
-print(gp)
+save_plot("sadult", caption = "The predicted yearling and adult survival by year.")

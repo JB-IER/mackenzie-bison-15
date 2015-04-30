@@ -4,19 +4,21 @@ model1 <- jags_model("model{
   bSurvivalCalf ~ dnorm(0, 2^-2)
   bSurvivalAdult ~ dnorm(0, 2^-2)
 
+  bSurvivalCalfPDO ~ dnorm(0, 2^-2)
+
   sSurvivalCalfYear ~ dunif(0, 2)
   for(i in 1:nYear){
     bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
 
     logit(eProductivityYear[i]) <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[i]
+    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfPDO * PDO[i]# + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
   }
 
-  bCalves1 ~ dunif(0, 1000)
-  bYearlings1 ~ dunif(0, 500)
   bAdults1 ~ dunif(0, 4000)
+  bCalves1 <- bAdults1 * eProductivityYear[1]
+  bYearlings1 ~ dunif(0, 500)
 
   bCalves[1] <- bCalves1
   bYearlings[1] <- bYearlings1
@@ -39,6 +41,7 @@ model1 <- jags_model("model{
   }
 
   sDispersionCalves ~ dunif(0, 2)
+  sDispersionYearlings ~ dunif(0, 2)
   for(i in 1:length(Year)) {
     eCorComp[i] <- ((Dayte[i] - 135) / 365)
     eCalvesComp[i] <- bCalves[Year[i]] * eSurvivalCalfYear[Year[i]]^eCorComp[i]
@@ -48,9 +51,10 @@ model1 <- jags_model("model{
     eCowsComp[i] <- eAdultsComp[i] / 2
 
     eDispersionCalves[i] ~ dnorm(0, sDispersionCalves^-2)
+    eDispersionYearlings[i] ~ dnorm(0, sDispersionYearlings^-2)
 
     logit(eProportionCalves[i]) <- logit(eCalvesComp[i] / eCowsComp[i]) + eDispersionCalves[i]
-    eProportionCowsYearlings[i] <- eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])
+    logit(eProportionCowsYearlings[i]) <- logit(eCowsComp[i] / (eYearlingsComp[i] + eCowsComp[i])) + eDispersionYearlings[i]
 
     Calves[i] ~ dbin(eProportionCalves[i], Cows[i])
     Cows[i] ~ dbin(eProportionCowsYearlings[i], YearlingsCows[i])
@@ -61,7 +65,7 @@ derived_code = "data{
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
 
     logit(eProductivityYear[i]) <- bProductivity
-    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfYear[Year[i]]
+    logit(eSurvivalCalfYear[i]) <- bSurvivalCalf + bSurvivalCalfPDO * PDO[i]# + bSurvivalCalfYear[i]
     logit(eSurvivalYearlingYear[i]) <- bSurvivalAdult
     logit(eSurvivalAdultYear[i]) <- bSurvivalAdult
 
@@ -75,6 +79,14 @@ derived_code = "data{
   }
 }",
 modify_data = function (data) {
+
+  env <- data.frame(Year = data$Year, PDO = data$PDO)
+  env %<>% na.omit %>% unique
+  env %<>% arrange(Year)
+
+  stopifnot(nrow(env) == data$nYear)
+
+  data$PDO  <- env$PDO
 
   bison <- data.frame(Year = data$Year, Bison = data$Bison)
   bison %<>% na.omit %>% unique
@@ -98,7 +110,7 @@ modify_data_derived = function (data) {
 },
 random_effects = list(bSurvivalCalfYear = "Year", bCalves = "Year",
                       bYearlings = "Year", bAdults = "Year"),
-select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows")
+select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "PDO")
 )
 
 model2 <- jags_model("model{
