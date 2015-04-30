@@ -18,9 +18,7 @@ rename = c(
   "calf_cow" = "",
   "yearling_cow" = "",
   "popn" = "",
-  "prod" = "",
   "scalf" = "",
-  "sadult" = "",
   "pdo" = "")
 drop = NULL
 ```
@@ -111,7 +109,6 @@ Key assumptions of the population dynamic model include:
 - Calf survival is able to vary with the Pacific Decadal Oscillation Index.
 - Constant and identical yearling and adult survival.
 - Clustering of cows with and without calves.
-- Clustering of yearlings and cows.
 - Each year runs from May 15 to May 15.
 - Survival does not vary seasonally.
 

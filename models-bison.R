@@ -31,7 +31,7 @@ model1 <- jags_model("model{
     eAdults[i] <- bAdults[YearBison[i]] * bSurvivalAdult^eCorrection
 
     eBison[i] <- eCalves[i] + eYearlings[i] + eAdults[i]
-    Bison[i] ~ dnorm(eBison[i], 100^-2)
+    Bison[i] ~ dnorm(eBison[i], 250^-2)
   }
 
   sDispersionCalves ~ dunif(0, 2)

@@ -9,6 +9,7 @@ ratio$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = filter(ratio), aes(x = Year, y = Calves / Cows, size = Calves + Cows))
 gp <- gp + geom_point()
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 2))
 gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
 gp <- gp + expand_limits(y = c(0,1))
 
@@ -19,6 +20,7 @@ save_plot("calf_cow", caption = "The calf-cow composition data by year.")
 
 gp <- ggplot(data = ratio, aes(x = Year, y = Yearlings / Cows, size = Yearlings + Cows))
 gp <- gp + geom_point()
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 2))
 gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
 gp <- gp + expand_limits(y = c(0,1))
 
@@ -36,6 +38,7 @@ calfcow$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = calfcow, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Calf:Cow Ratio")
 gp <- gp + expand_limits(y = c(0,1))
 
@@ -49,6 +52,7 @@ yearcow$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = yearcow, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Yearling:Cow Ratio")
 gp <- gp + expand_limits(y = c(0,1))
 
@@ -68,6 +72,7 @@ bison$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = bison, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Bison")
 gp <- gp + expand_limits(y = 0)
 
@@ -84,6 +89,7 @@ scalf$Year %<>% as.character %>% as.integer
 
 gp <- ggplot(data = scalf, aes(x = Year, y = estimate))
 gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
+gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Calf Survival (%)", labels = percent)
 gp <- gp + expand_limits(y = c(0,1))
 

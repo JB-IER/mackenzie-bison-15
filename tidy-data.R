@@ -10,7 +10,7 @@ bison %<>% left_join(pdo, by = "Year")
 
 rm(weather, counts, pdo)
 
-bison %<>% filter(Year <= 2012)
+bison %<>% filter(Year >= 1999 & Year <= 2012)
 
 set_folders("tidy")
 
