@@ -77,6 +77,7 @@ print(gp)
 save_plot("popn", caption = "The predicted herd size by year.")
 
 newdata <- unique(select(data, Year, PDO))
+newdata %<>% arrange(Year)
 
 scalf <- predict(analysis, parm = "eSurvivalCalfYear", newdata = newdata)
 scalf$Year %<>% as.character %>% as.integer
@@ -91,11 +92,14 @@ print(gp)
 
 save_plot("scalf", caption = "The predicted calf survival by year.")
 
-gp <- ggplot(data = scalf, aes(x = PDO, y = estimate))
+newdata$Year <- newdata$Year[nrow(newdata)]
+pdo <- predict(analysis, parm = "eSurvivalCalfYear", newdata = newdata)
+
+gp <- ggplot(data = pdo, aes(x = PDO, y = estimate))
 gp <- gp + geom_line()
 gp <- gp + geom_line(aes(y = lower), linetype = "dotted")
 gp <- gp + geom_line(aes(y = upper), linetype = "dotted")
-gp <- gp + scale_y_continuous(name = "Pacific Decadal Oscillation Index")
+gp <- gp + scale_x_continuous(name = "Pacific Decadal Oscillation Index")
 gp <- gp + scale_y_continuous(name = "Calf Survival (%)", labels = percent)
 gp <- gp + expand_limits(y = c(0,1))
 
@@ -104,30 +108,3 @@ print(gp)
 
 save_plot("pdo", caption = "The predicted relationship between calf survival and
           the Pacific Decadal Oscillation Index.")
-
-
-prod <- predict(analysis, parm = "eProductivityYear", newdata = "Year")
-prod$Year %<>% as.character %>% as.integer
-
-gp <- ggplot(data = prod, aes(x = Year, y = estimate))
-gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Productivity (%)", labels = percent)
-gp <- gp + expand_limits(y = c(0,1))
-
-gwindow(50)
-print(gp)
-
-save_plot("prod", caption = "The predicted probability of a female calfing by year.")
-
-sadult <- predict(analysis, parm = "eSurvivalAdultYear", newdata = "Year")
-sadult$Year %<>% as.character %>% as.integer
-
-gp <- ggplot(data = sadult, aes(x = Year, y = estimate))
-gp <- gp + geom_pointrange(aes(ymin = lower, ymax = upper))
-gp <- gp + scale_y_continuous(name = "Adult Survival (%)", labels = percent)
-gp <- gp + expand_limits(y = c(0,1))
-
-gwindow(50)
-print(gp)
-
-save_plot("sadult", caption = "The predicted yearling and adult survival by year.")
