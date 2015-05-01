@@ -72,8 +72,9 @@ model1 <- jags_model("model{
   }
 }",
                      derived_code = "data{
-  for(i in 1:length(Year)) {
     eCorrection <- 308/365
+
+  for(i in 1:length(Year)) {
 
     logit(eSurvivalCalfYear[i]) <- logit(bSurvivalCalf) + bSurvivalCalfYear[Year[i]]
 
