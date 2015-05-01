@@ -1,23 +1,5 @@
-description <- c("`bProductivity`" = "Probability of a female adult calving",
-"`bSurvivalAdult`" = "Adult and yearling survival",
-"`bSurvivalCalf`" = "Calf survival",
-"`sSurvivalCalfYear`" = "SD of the effect of year on `bSurvivalCalf`",
- "`eSurvivalCalfYear[i]`" = "Calf survival from the `i`$^{th}$ to `i+1`$^{th}$ year",
- "`bYearlings1`" = "Number of yearlings at the start of the first year",
- "`bAdults1`" = "Number of adults at the start of the first year",
- "`bCalves[i]`" = "Number of calves at the start of the `i`$^{th}$ year",
- "`bYearlings[i]`" = "Number of yearlings at the start of the `i`$^{th}$ year",
- "`bAdults[i]`" = "Number of adults at the start of the `i`$^{th}$ year",
- "`eCorrection`" = "Survival correction for the timing of the herd size estimates",
- "`YearBison[i]`" = "The year of the `i`$^{th}$ herd size estimate",
- "`Bison[i]`" = "The `i`$^{th}$ herd size estimate",
- "`sDispersionCalves`" = "SD of the extra-binomial variation in cow with calf clustering",
- "`Dayte[i]`" = "Day of the year of the `i`$^{th}$ composition observation",
- "`eProportionCalves[i]`" = "Expected proportion of cows with a calf in the `i`$^{th}$ composition observation",
- "`eProportionCowsYearlings[i]`" = "Expected proportion of cows and yearlings that are cows in the `i`$^{th}$ composition observation",
- "`Calves[i]`" = "Number of calves in the `i`$^{th}$ composition observation",
-"`YearlingsCows[i]`" = "Number of yearlings and cows in the `i`$^{th}$ composition observation",
- "`Cows[i]`" = "Number of cows in the `i`$^{th}$ composition observation")
+description <- c(
+"`bSurvivalCalfEnv`" = "Effect of the environmental variable on `bSurvivalCalf`")
 
 model1 <- jags_model("model{
 
@@ -25,10 +7,11 @@ model1 <- jags_model("model{
   bSurvivalAdult ~ dunif(0, 1)
   bSurvivalCalf ~ dunif(0, 1)
 
+  bSurvivalCalfEnv ~ dnorm(0, 2^-2)
   sSurvivalCalfYear ~ dunif(0, 2)
   for(i in 1:nYear){
     bSurvivalCalfYear[i] ~ dnorm(0, sSurvivalCalfYear^-2)
-    logit(eSurvivalCalfYear[i]) <- logit(bSurvivalCalf) + bSurvivalCalfYear[i]
+    logit(eSurvivalCalfYear[i]) <- logit(bSurvivalCalf) + bSurvivalCalfEnv * Env[i] + bSurvivalCalfYear[i]
   }
 
   bYearlings1 ~ dunif(0, 500)
@@ -73,11 +56,9 @@ model1 <- jags_model("model{
 }",
                      derived_code = "data{
   for(i in 1:length(Year)) {
-    eCorrection <- 308/365
+    prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
 
-    logit(eSurvivalCalfYear[i]) <- logit(bSurvivalCalf) + bSurvivalCalfYear[Year[i]]
-
-    prediction[i] <- bCalves[Year[i]] * eSurvivalCalfYear[i]^eCorrection + (bYearlings[Year[i]] + bAdults[Year[i]]) * bSurvivalAdult^eCorrection
+    logit(eSurvivalCalfYear[i]) <- logit(bSurvivalCalf) + bSurvivalCalfEnv * Env[i] + bSurvivalCalfYear[Year[i]]
 
     eCorComp[i] <- ((Dayte[i] - 135) / 365)
     eCalvesComp[i] <- bCalves[Year[i]] * eSurvivalCalfYear[i]^eCorComp[i]
@@ -89,6 +70,14 @@ model1 <- jags_model("model{
   }
 }",
                      modify_data = function (data) {
+
+                       env <- data.frame(Year = data$Year, Env = data$Env)
+                       env %<>% na.omit %>% unique
+                       env %<>% arrange(Year)
+
+                       stopifnot(nrow(env) == data$nYear)
+
+                       data$Env  <- env$Env
 
                        bison <- data.frame(Year = data$Year, Bison = data$Bison)
                        bison %<>% na.omit %>% unique
@@ -112,7 +101,8 @@ model1 <- jags_model("model{
                      },
                      random_effects = list(bSurvivalCalfYear = "Year", bCalves = "Year",
                                            bYearlings = "Year", bAdults = "Year"),
-                     select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows")
+                     select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "Env*")
 )
 
 models <- jaggernaut::combine(model1)
+

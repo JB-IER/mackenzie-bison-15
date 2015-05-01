@@ -14,12 +14,16 @@ opts <- list(
 )
 
 rename = c(
-  "bison" = "",
+  "bison" = "Population Dynamic",
+  "env" = "Environmental",
+  "PDO" = "Pacific Decadal Oscillation",
+  "WSI" = "Winter Severity Index",
+  "Rainfall" = "Rainfall",
+  "SummerTemp" = "Summer Air Temperature", 
   "calf_cow" = "",
   "yearling_cow" = "",
-  "popn" = "",
-  "scalf" = "",
-  "pdo" = "")
+  "herd" = "",
+  "scalf" = "")
 drop = NULL
 ```
 
@@ -39,9 +43,6 @@ The primary questions this analysis attempts to answer are:
 > What is the survival of calves, yearlings and adult in the Mackenzie herd?
 
 > Is survival of calves in the Mackenzie herd driven by climatic conditions?
-
-The Pacific Decadal Oscillation Index provides a metric of climatic conditions 
-that is predictive of population fluctuations in some animal populations.
 
 ## Methods
 
@@ -112,6 +113,9 @@ Key assumptions of the population dynamic model include:
 - Clustering of cows with and without calves.
 - Each year runs from May 15 to May 15.
 - Survival does not vary seasonally.
+
+In addition the effect of various environmental variables on calf
+survival was tested by adding a standardised covariate to the population dynamic model.
 
 ```{r}
 report_models(rename = rename, drop = drop)
