@@ -4,5 +4,5 @@ source("header.R")
 
 knit_report()
 
-# report_to_jekyll()
-# push_jekyll_site()
+report_to_jekyll()
+push_jekyll_site()

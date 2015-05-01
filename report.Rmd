@@ -48,7 +48,8 @@ The primary questions this analysis attempts to answer are:
 
 ### Data Preparation
 
-The data were provided by Integrated Ecological Research.
+The data were provided by Aurora Consulting, the University of Alberta and 
+the Government of the Northwest Territories.
 
 In 2013 the herd experienced high mortality due to an anthrax outbreak. 
 Consequently, the 2013 and 2014 data were excluded.
@@ -133,6 +134,12 @@ report_figures(rename = rename, drop = drop)
 
 The organisations and individuals whose contributions have made this analysis report possible include:
 
+- Aurora Consulting
+    - Kim Poole
+- University of Alberta
+    - Craig Demars
+- Government of the Northwest Territorie
+    - Terry Armstrong
 - Poisson Consulting
     - Robyn Irvine
 
