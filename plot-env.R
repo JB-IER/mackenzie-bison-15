@@ -33,7 +33,7 @@ gp <- gp + scale_x_continuous(name = "Year", breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Standardised Value")
 gp <- gp + theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
-gwindow()
+gwindow(75)
 print(gp)
 
 save_plot("senv", caption = "Standardised environmental variables by year")

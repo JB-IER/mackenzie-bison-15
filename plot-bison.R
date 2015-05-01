@@ -60,7 +60,7 @@ gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Herd Size", labels = comma)
 gp <- gp + expand_limits(x = c(1999, 2012), y = c(0,1))
 
-gwindow(60, 50)
+gwindow(50)
 print(gp)
 
 save_plot("herd", caption = "The predicted herd size in March by year.")
@@ -76,7 +76,7 @@ gp <- gp + scale_x_continuous(breaks = seq(2000, 2012, by = 4))
 gp <- gp + scale_y_continuous(name = "Calf Survival (%)", labels = percent)
 gp <- gp + expand_limits(x = c(1999, 2012), y = c(0,1))
 
-gwindow(60, 50)
+gwindow(50)
 print(gp)
 
 save_plot("scalf", caption = "The predicted calf survival by year.")
