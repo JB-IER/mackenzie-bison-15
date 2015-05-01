@@ -48,8 +48,9 @@ that is predictive of population fluctuations in some animal populations.
 ### Data Preparation
 
 The data were provided by Integrated Ecological Research.
+
 In 2013 the herd experienced high mortality due to an anthrax outbreak. 
-Consequently, the data for 2013 and 2014 were excluded.
+Consequently, the 2013 and 2014 data were excluded.
 
 ### Statistical Analysis
 

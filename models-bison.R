@@ -1,3 +1,25 @@
+description <- c("`bProductivity`" = "Probability of a female adult calving",
+"`bSurvivalAdult`" = "Adult and yearling survival",
+"`bSurvivalCalf`" = "Intercept for `logit(eSurvivalCalfYear)`",
+"`bSurvivalCalfPDO`" = "Effect of the Pacific Decadal Oscillation on `bSurvivalCalf`",
+"`sSurvivalCalfYear`" = "SD of the effect of year on `bSurvivalCalf`",
+ "`eSurvivalCalfYear[i]`" = "Calf survival from the `i`$^{th}$ to `i+1`$^{th}$ year",
+ "`bYearlings1`" = "Number of yearlings at the start of the first year",
+ "`bAdults1`" = "Number of adults at the start of the first year",
+ "`bCalves[i]`" = "Number of calves at the start of the `i`$^{th}$ year",
+ "`bYearlings[i]`" = "Number of yearlings at the start of the `i`$^{th}$ year",
+ "`bAdults[i]`" = "Number of adults at the start of the `i`$^{th}$ year",
+ "`eCorrection`" = "Survival correction for the timing of the herd size estimates",
+ "`YearBison[i]`" = "The year of the `i`$^{th}$ herd size estimate",
+ "`Bison[i]`" = "The `i`$^{th}$ herd size estimate",
+ "`sDispersionCalves`" = "SD of the extra-binomial variation in cow with calf clustering",
+ "`Dayte[i]`" = "Day of the year of the `i`$^{th}$ composition observation",
+ "`eProportionCalves[i]`" = "Expected proportion of cows with a calf in the `i`$^{th}$ composition observation",
+ "`eProportionCowsYearlings[i]`" = "Expected proportion of cows and yearlings that are cows in the `i`$^{th}$ composition observation",
+ "`Calves[i]`" = "Number of calves in the `i`$^{th}$ composition observation",
+"`YearlingsCows[i]`" = "Number of yearlings and cows in the `i`$^{th}$ composition observation",
+ "`Cows[i]`" = "Number of cows in the `i`$^{th}$ composition observation")
+
 model1 <- jags_model("model{
 
   bProductivity ~ dunif(0, 1)
@@ -51,7 +73,7 @@ model1 <- jags_model("model{
     Cows[i] ~ dbin(eProportionCowsYearlings[i], YearlingsCows[i])
   }
 }",
-derived_code = "data{
+                     derived_code = "data{
   for(i in 1:length(Year)) {
     prediction[i] <- bCalves[Year[i]] + bYearlings[Year[i]] + bAdults[Year[i]]
 
@@ -66,39 +88,39 @@ derived_code = "data{
     eYearlingCowRatio[i] <- eYearlingsComp[i] /  (eAdultsComp[i] / 2)
   }
 }",
-modify_data = function (data) {
+                     modify_data = function (data) {
 
-  env <- data.frame(Year = data$Year, PDO = data$PDO)
-  env %<>% na.omit %>% unique
-  env %<>% arrange(Year)
+                       env <- data.frame(Year = data$Year, PDO = data$PDO)
+                       env %<>% na.omit %>% unique
+                       env %<>% arrange(Year)
 
-  stopifnot(nrow(env) == data$nYear)
+                       stopifnot(nrow(env) == data$nYear)
 
-  data$PDO  <- env$PDO
+                       data$PDO  <- env$PDO
 
-  bison <- data.frame(Year = data$Year, Bison = data$Bison)
-  bison %<>% na.omit %>% unique
+                       bison <- data.frame(Year = data$Year, Bison = data$Bison)
+                       bison %<>% na.omit %>% unique
 
-  data$YearBison  <- bison$Year
-  data$Bison  <- bison$Bison
+                       data$YearBison  <- bison$Year
+                       data$Bison  <- bison$Bison
 
-  data$Year <- data$Year[!is.na(data$Cows)]
-  data$Dayte <- data$Dayte[!is.na(data$Cows)]
-  data$Calves <- data$Calves[!is.na(data$Cows)]
-  data$Yearlings <- data$Yearlings[!is.na(data$Cows)]
-  data$Cows <- data$Cows[!is.na(data$Cows)]
+                       data$Year <- data$Year[!is.na(data$Cows)]
+                       data$Dayte <- data$Dayte[!is.na(data$Cows)]
+                       data$Calves <- data$Calves[!is.na(data$Cows)]
+                       data$Yearlings <- data$Yearlings[!is.na(data$Cows)]
+                       data$Cows <- data$Cows[!is.na(data$Cows)]
 
-  data$YearlingsCows  <- data$Yearlings + data$Cows
-  data$Yearlings <- NULL
-  data
+                       data$YearlingsCows  <- data$Yearlings + data$Cows
+                       data$Yearlings <- NULL
+                       data
 
-},
-modify_data_derived = function (data) {
-  data
-},
-random_effects = list(bSurvivalCalfYear = "Year", bCalves = "Year",
-                      bYearlings = "Year", bAdults = "Year"),
-select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "PDO")
+                     },
+                     modify_data_derived = function (data) {
+                       data
+                     },
+                     random_effects = list(bSurvivalCalfYear = "Year", bCalves = "Year",
+                                           bYearlings = "Year", bAdults = "Year"),
+                     select_data = c("Year", "Bison", "Dayte", "Calves", "Yearlings", "Cows", "PDO")
 )
 
 models <- jaggernaut::combine(model1)
